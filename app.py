@@ -13,8 +13,8 @@ model = YOLO("best.pt")
 
 def process_image(image):
     # Convert the image to a format YOLO expects (BGR, OpenCV format)
-    image_np = np.array(image)
-    image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+    # image_np = np.array(image)
+    # image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
     # Run YOLO on the image
     results = model(image)
@@ -24,16 +24,16 @@ def process_image(image):
         box = results[0].boxes[0].xyxy[0].cpu().numpy().astype(int)  # Get first bounding box
         x1, y1, x2, y2 = box
 
-        # Crop the detected number plate
-        cropped_image = image_np[y1:y2, x1:x2]
+        # # Crop the detected number plate
+        # cropped_image = image_np[y1:y2, x1:x2]
 
-        # Convert to PIL Image for base64 encoding
-        pil_img = Image.fromarray(cropped_image)
-        buffer = BytesIO()
-        pil_img.save(buffer, format="JPEG")
-        img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        # # Convert to PIL Image for base64 encoding
+        # pil_img = Image.fromarray(cropped_image)
+        # buffer = BytesIO()
+        # pil_img.save(buffer, format="JPEG")
+        # img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-        return img_str
+        return box
 
     return None
 
