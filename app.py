@@ -3,6 +3,7 @@ import cv2
 from PIL import Image
 from ultralytics import YOLO
 import numpy as np
+import os
 
 app = Flask(__name__)
 
@@ -32,6 +33,10 @@ def process_image(image):
         }
 
     return None
+
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({"message": "Welcome to the number plate detection API"})
 
 @app.route('/detect_number_plate', methods=['POST'])
 def detect_number_plate():
