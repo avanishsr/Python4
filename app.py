@@ -33,7 +33,7 @@ def process_image(image):
         # pil_img.save(buffer, format="JPEG")
         # img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-        return box
+        return 2
 
     return None
 
