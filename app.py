@@ -6,6 +6,9 @@ from PIL import Image
 from ultralytics import YOLO
 import numpy as np
 import os
+
+from werkzeug.utils import secure_filename
+
 app = Flask(__name__)
 
 # Load the YOLO model
