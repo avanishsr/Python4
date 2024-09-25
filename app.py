@@ -42,22 +42,23 @@ def root():
 def detect_number_plate():
     if 'file' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
-
-    file = request.files['file']
-
-    # Open the uploaded image file
-    image = Image.open(file)
-
-    # Process the image to detect the number plate
-    processed_result = process_image(image)
-
-    if processed_result:
-        return jsonify({
-            "bounding_box": processed_result["bounding_box"],
-            "message": "Number plate detected successfully"
-        })
     else:
         return jsonify({"error": "Could not detect number plate"}), 400
+    # file = request.files['file']
+
+    # # Open the uploaded image file
+    # image = Image.open(file)
+
+    # # Process the image to detect the number plate
+    # processed_result = process_image(image)
+
+    # if processed_result:
+    #     return jsonify({
+    #         "bounding_box": processed_result["bounding_box"],
+    #         "message": "Number plate detected successfully"
+    #     })
+    # else:
+    #     return jsonify({"error": "Could not detect number plate"}), 400
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
