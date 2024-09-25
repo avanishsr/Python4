@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 import cv2
+import base64
+from io import BytesIO
 from PIL import Image
 from ultralytics import YOLO
 import numpy as np
-import os
 
 app = Flask(__name__)
 
@@ -16,7 +17,7 @@ def process_image(image):
     image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
     # Run YOLO on the image
-    results = model(image_bgr)
+    results = model(image)
 
     # Assuming the first result is the number plate, adjust if needed
     if len(results) > 0 and len(results[0].boxes) > 0:
@@ -26,40 +27,33 @@ def process_image(image):
         # Crop the detected number plate
         cropped_image = image_np[y1:y2, x1:x2]
 
-        # Return bounding box and cropped image
-        return {
-            "bounding_box": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-            "cropped_image": cropped_image
-        }
+        # Convert to PIL Image for base64 encoding
+        pil_img = Image.fromarray(cropped_image)
+        buffer = BytesIO()
+        pil_img.save(buffer, format="JPEG")
+        img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+        return img_str
 
     return None
 
-@app.route('/', methods=['GET'])
-def root():
-    return jsonify({"message": "Welcome to the number plate detection API"})
-
-@app.route('/det', methods=['POST'])
+@app.route('/detect_number_plate', methods=['POST'])
 def detect_number_plate():
     if 'file' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files['file']
+
+    # Open the uploaded image file
+    image = Image.open(file)
+
+    # Process the image to detect the number plate
+    cropped_image_base64 = process_image(image)
+
+    if cropped_image_base64:
+        return jsonify({"cropped_image": cropped_image_base64})
     else:
         return jsonify({"error": "Could not detect number plate"}), 400
-    # file = request.files['file']
 
-    # # Open the uploaded image file
-    # image = Image.open(file)
-
-    # # Process the image to detect the number plate
-    # processed_result = process_image(image)
-
-    # if processed_result:
-    #     return jsonify({
-    #         "bounding_box": processed_result["bounding_box"],
-    #         "message": "Number plate detected successfully"
-    #     })
-    # else:
-    #     return jsonify({"error": "Could not detect number plate"}), 400
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
