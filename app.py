@@ -38,7 +38,7 @@ def process_image(image):
 def root():
     return jsonify({"message": "Welcome to the number plate detection API"})
 
-@app.route('/detect_number_plate', methods=['POST'])
+@app.route('/det', methods=['POST'])
 def detect_number_plate():
     if 'file' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
