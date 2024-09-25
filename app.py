@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify
 import cv2
-import base64
-from io import BytesIO
 from PIL import Image
 from ultralytics import YOLO
 import numpy as np
@@ -27,13 +25,11 @@ def process_image(image):
         # Crop the detected number plate
         cropped_image = image_np[y1:y2, x1:x2]
 
-        # Convert to PIL Image for base64 encoding
-        pil_img = Image.fromarray(cropped_image)
-        buffer = BytesIO()
-        pil_img.save(buffer, format="JPEG")
-        img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-        return img_str
+        # Return bounding box and cropped image
+        return {
+            "bounding_box": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
+            "cropped_image": cropped_image
+        }
 
     return None
 
@@ -48,10 +44,13 @@ def detect_number_plate():
     image = Image.open(file)
 
     # Process the image to detect the number plate
-    cropped_image_base64 = process_image(image)
+    processed_result = process_image(image)
 
-    if cropped_image_base64:
-        return jsonify({"cropped_image": cropped_image_base64})
+    if processed_result:
+        return jsonify({
+            "bounding_box": processed_result["bounding_box"],
+            "message": "Number plate detected successfully"
+        })
     else:
         return jsonify({"error": "Could not detect number plate"}), 400
 
