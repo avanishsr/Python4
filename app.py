@@ -9,7 +9,21 @@ import numpy as np
 app = Flask(__name__)
 
 # Load the YOLO model
-model = YOLO("best.pt")
+model = YOLO('best.pt')
+
+# Define the upload folder for images
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Create the upload folder if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Define the allowed file extensions
+ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'png', 'JPEG'])
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def process_image(image):
     # Convert the image to a format YOLO expects (BGR, OpenCV format)
@@ -39,16 +53,15 @@ def process_image(image):
 
 @app.route('/detect_number_plate', methods=['POST'])
 def detect_number_plate():
-    if 'file' not in request.files:
+    if 'image' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files['file']
+    image = request.files['image']
+    filename = secure_filename(image.filename)
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    image.save(image_path)
 
-    # Open the uploaded image file
-    image = Image.open(file)
-
-    # Process the image to detect the number plate
-    cropped_image_base64 = process_image(image)
+    cropped_image_base64 = process_image(image_path)
 
     if cropped_image_base64:
         return jsonify({"cropped_image": cropped_image_base64})
